@@ -6,7 +6,7 @@ To get started, clone this repository to your local machine and navigate to the 
 
 bash
 ```
-git clone https://github.com/hamza-benjelloun/recommendation-systems.git
+git clone https://github.com/Hamza-benjelloun/Recommendation-Systems.git
 cd recommendation-systems/project-name
 ```
 ## Requirements

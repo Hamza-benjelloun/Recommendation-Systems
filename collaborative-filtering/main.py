@@ -1,7 +1,7 @@
 import torch
 
 import pandas as pd
-from src.model.Model import RecSysModel
+from src.model.RecSysModel import RecSysModel
 from src.utils.MovieDataset import MovieDataset
 from src.utils.DataUtils import (
     get_data_loader,
@@ -49,10 +49,11 @@ def main():
     df = pd.read_csv(data_path)
 
     # encode data
-    df = encode_data(df)
+    df["userId"] = encode_data(df["userId"])
+    df["movieId"] = encode_data(df["movieId"])
 
     # get train test split
-    train_df, test_df = get_train_test_split(df)
+    train_df, test_df = get_train_test_split(df, stratify=df["rating"])
 
     # get data loaders
     train_loader = get_data_loader(
@@ -92,4 +93,4 @@ def main():
 
 
 if __name__ == "__main__":
-    pass
+    main()

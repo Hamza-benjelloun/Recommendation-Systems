@@ -51,48 +51,35 @@ def get_scheduler(optimizer, step_size, gamma):
 def train(
     model,
     train_loader,
-    test_loader,
     optimizer,
     loss_function,
-    scheduler,
     epochs,
-    device,
 ):
-    for epoch in range(epochs):
-        model.train()
-        train_loss = 0
-        for batch in train_loader:
-            users = batch["users"].to(device)
-            movies = batch["movies"].to(device)
-            ratings = batch["ratings"].to(device)
+    total_loss = 0
+    plot_steps, print_steps = 5000, 5000
+    step_cnt = 0
+    all_losses_list = []
+    model.train()
+    for epoch_i in range(epochs):
+        for i, train_data in enumerate(train_loader):
+            output = model(train_data["users"], train_data["movies"])
 
+            # .view(4, -1) is to reshape the rating to match the shape of model output which is 4x1
+            rating = train_data["ratings"].view(4, -1).to(torch.float32)
+
+            loss = loss_function(output, rating)
+            total_loss = total_loss + loss.sum().item()
             optimizer.zero_grad()
-
-            outputs = model(users, movies)
-            loss = loss_function(outputs, ratings)
             loss.backward()
             optimizer.step()
 
-            train_loss += loss.item()
+            step_cnt = step_cnt + len(train_data["users"])
 
-        scheduler.step()
-
-        model.eval()
-        test_loss = 0
-        with torch.no_grad():
-            for batch in test_loader:
-                users = batch["users"].to(device)
-                movies = batch["movies"].to(device)
-                ratings = batch["ratings"].to(device)
-
-                outputs = model(users, movies)
-                loss = loss_function(outputs, ratings)
-
-                test_loss += loss.item()
-
-        print(
-            f"Epoch: {epoch+1}, Train Loss: {train_loss/len(train_loader):.3f}, Test Loss: {test_loss/len(test_loader):.3f}"
-        )
+            if step_cnt % plot_steps == 0:
+                avg_loss = total_loss / (len(train_data["users"]) * plot_steps)
+                print(f"epoch {epoch_i} loss at step: {step_cnt} is {avg_loss}")
+                all_losses_list.append(avg_loss)
+                total_loss = 0  # reset total_loss
 
 
 def test(model, test_loader, loss_function, device):

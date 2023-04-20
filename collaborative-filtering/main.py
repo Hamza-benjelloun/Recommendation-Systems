@@ -80,12 +80,9 @@ def main():
     train(
         model,
         train_loader,
-        test_loader,
         optimizer,
         loss_function,
-        scheduler,
         epochs,
-        device,
     )
 
     # test
